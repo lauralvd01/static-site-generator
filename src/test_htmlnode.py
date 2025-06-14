@@ -34,7 +34,6 @@ class TestHTMLNode(unittest.TestCase):
         
         node = HTMLNode(tag='span', value=None, children=[HTMLNode(tag='strong', value='Bold Text')], props={'style': 'color: red;'})
         self.assertEqual(repr(node), 'HTMLNode(tag=span, value=None, children=[HTMLNode(tag=strong, value=Bold Text, children=None, props=)], props= style="color: red;")')
-        
-        
+    
 if __name__ == "__main__":
     unittest.main()

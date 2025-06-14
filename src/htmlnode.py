@@ -3,6 +3,7 @@ An HTMLNode "HTMLNode" represents a node in an HTML document tree.
 For example : a <p> tag and its contents, or an <a> tag and its contents. 
 It can be block level or inline, and is designed to only output HTML.
 """
+
 class HTMLNode :
     
     """
@@ -34,11 +35,3 @@ class HTMLNode :
     """
     def __repr__(self):
         return f'HTMLNode(tag={self.tag}, value={self.value}, children={self.children}, props={self.props_to_html()})'
-        # if self.tag is None:
-        #     return f"Raw text : value={self.value}, props={self.props_to_html()}"
-        # if self.value is not None:
-        #     return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
-        # if self.children is not None:
-        #     children_html = ''.join([repr(child) for child in self.children])
-        #     return f"<{self.tag}{self.props_to_html()}>{children_html}</{self.tag}>"
-        # return f"<{self.tag}{self.props_to_html()} />"

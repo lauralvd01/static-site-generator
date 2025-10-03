@@ -33,5 +33,9 @@ class TestLeafNode(unittest.TestCase):
         node = LeafNode(tag=None, value="Hello, World!")
         self.assertEqual(node.to_html(), "Hello, World!")
         
+    def test_leaf_to_html_without_value(self):
+        node = LeafNode(None,None)
+        self.assertRaises(ValueError,node.to_html)
+        
 if __name__ == "__main__":
     unittest.main()

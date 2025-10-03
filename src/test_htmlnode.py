@@ -18,6 +18,10 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(node.children[0].tag, 'span')
         self.assertEqual(node.props, {'href': 'https://example.com'})
         
+    def test_to_html_without_tag(self):
+        node = HTMLNode()
+        self.assertRaises(NotImplementedError,node.to_html)    
+    
     def test_props_to_html(self):
         node = HTMLNode(tag='div')
         self.assertEqual(node.props_to_html(), '')

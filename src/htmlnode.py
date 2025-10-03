@@ -7,7 +7,7 @@ It can be block level or inline, and is designed to only output HTML.
 class HTMLNode :
     
     """
-    Each node has a tag, value, children, and properties.
+    Each node has a tag, a value, children and properties.
     The tag is a string representing the HTML tag name (e.g., 'p', 'a', 'h1', etc.).
     The value is a string representing the value of the HTML tag (e.g. the text inside a paragraph).
     Children are a list of HTMLNode objects representing the children ot this node
@@ -18,6 +18,9 @@ class HTMLNode :
         self.value = value # if None, assuming to have children
         self.children = children # if None, assuming to have a value
         self.props = props # if None, assuming to have no attributes
+    
+    def to_html(self):
+        raise NotImplementedError
     
     """
     Returns a string that represents the HTML attributes of the node.

@@ -105,4 +105,4 @@ class TestSplitMarkdown(unittest.TestCase):
         
     def test_extract_markdown_links(self):
         matches = extract_markdown_links("This is text with an ![image](https://i.imgur.com/zjjcJKZ.png), ![another one](https://url.com) and one [link](dumblink.com).")
-        self.assertListEqual(matches, [("image", "https://i.imgur.com/zjjcJKZ.png"),("another one","https://url.com"),("link","dumblink.com")])
+        self.assertListEqual(matches, [("link","dumblink.com")])

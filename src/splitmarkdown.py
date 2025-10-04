@@ -34,6 +34,7 @@ def extract_markdown_images(text):
 Takes raw markdown text.
 Returns a list of tuples. 
 Each tuple contains the anchor text and the URL of any markdown links as [anchor text](url).
+Don't extract markdown images.
 """
 def extract_markdown_links(text):
-    return re.findall(r"\[(.+?)\]\((.+?)\)",text)
+    return re.findall(r"[^!]\[(.+?)\]\((.+?)\)",text)

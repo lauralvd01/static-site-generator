@@ -17,7 +17,7 @@ def split_nodes_delimiter(old_nodes : list[TextNode], delimiter : str, text_type
         for index, part in enumerate(parts):
             if len(part) > 0 :
                 if index % 2 == 0:
-                    new_list.append(TextNode(part,old_node.text_type))
+                    new_list.append(TextNode(part,old_node.text_type,old_node.url))
                 else:
                     new_list.append(TextNode(part,text_type))
     return new_list
@@ -43,7 +43,6 @@ def extract_markdown_links(text):
 Takes a list of 'old nodes'.
 Returns a new list of nodes, where any old node that contains 
 a markdown image are split into the correspondant nodes.
-Assumes that only raw texts contain images.
 """
 def split_nodes_image(old_nodes):
     new_list = []
@@ -56,7 +55,7 @@ def split_nodes_image(old_nodes):
             img = images[i]
             parts = text.split(f'![{img[0]}]({img[1]})')
             if len(parts[0]) > 0:
-                new_list.append(TextNode(parts[0],TextType.TEXT))
+                new_list.append(TextNode(parts[0],old_node.text_type,old_node.url))
             new_list.append(TextNode(img[0],TextType.IMAGE,img[1]))
             if len(parts) > 1:
                 text = parts[1]
@@ -64,14 +63,13 @@ def split_nodes_image(old_nodes):
                 text = ''
             i += 1
         if len(text) > 0:
-            new_list.append(TextNode(text,TextType.TEXT))
+            new_list.append(TextNode(text,old_node.text_type,old_node.url))
     return new_list
 
 """
 Takes a list of 'old nodes'.
 Returns a new list of nodes, where any old node that contains 
 a markdown link are split into the correspondant nodes.
-Assumes that only raw texts contain links.
 """
 def split_nodes_link(old_nodes):
     new_list = []
@@ -84,7 +82,7 @@ def split_nodes_link(old_nodes):
             link = links[i]
             parts = text.split(f'[{link[0]}]({link[1]})')
             if len(parts[0]) > 0:
-                new_list.append(TextNode(parts[0],TextType.TEXT))
+                new_list.append(TextNode(parts[0],old_node.text_type,old_node.url))
             new_list.append(TextNode(link[0],TextType.LINK,link[1]))
             if len(parts) > 1:
                 text = parts[1]
@@ -92,5 +90,13 @@ def split_nodes_link(old_nodes):
                 text = ''
             i += 1
         if len(text) > 0:
-            new_list.append(TextNode(text,TextType.TEXT))
+            new_list.append(TextNode(text,old_node.text_type,old_node.url))
     return new_list
+
+def text_to_textnodes(text):
+    with_bold = split_nodes_delimiter([TextNode(text,TextType.TEXT)],'**',TextType.BOLD)
+    with_italic = split_nodes_delimiter(with_bold,'_',TextType.ITALIC)
+    with_code = split_nodes_delimiter(with_italic,'`',TextType.CODE)
+    with_images = split_nodes_image(with_code)
+    with_links = split_nodes_link(with_images)
+    return with_links

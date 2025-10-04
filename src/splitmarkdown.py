@@ -2,6 +2,8 @@ import re
 
 from textnode import TextType, TextNode
 
+############################################ Split inline elements
+
 """
 Takes a list of 'old nodes', a delimiter and a text type.
 Returns a new list of nodes, where any old node that contains 
@@ -93,6 +95,10 @@ def split_nodes_link(old_nodes):
             new_list.append(TextNode(text,old_node.text_type,old_node.url))
     return new_list
 
+"""
+Takes inline markdown as input.
+Returns the list of tje textnodes correponding to the inline elements.
+"""
 def text_to_textnodes(text):
     with_bold = split_nodes_delimiter([TextNode(text,TextType.TEXT)],'**',TextType.BOLD)
     with_italic = split_nodes_delimiter(with_bold,'_',TextType.ITALIC)
@@ -100,3 +106,15 @@ def text_to_textnodes(text):
     with_images = split_nodes_image(with_code)
     with_links = split_nodes_link(with_images)
     return with_links
+
+
+
+############################################ Split block elements
+
+"""
+Takes a raw Markdown string (representing a full document).
+Returns a list of "block" strings.
+"""
+def markdown_to_blocks(markdown):
+    return [block.strip() for block in markdown.split('\n\n') if len(block.strip()) > 0]
+

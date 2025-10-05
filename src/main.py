@@ -76,12 +76,30 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path,"w") as final_html_file:
         final_html_file.write(template_html)
 
+"""
+Takes a source directory, an html template path and a destination directory.
+For each markdown file of the source directory, generate the correspondant
+html based on the template and save it in the destination directory.
+Repeats recursively with each subdirectory.
+"""
+def generate_pages_recursive(dir_path_content,template_path, dest_dir_path):
+    if not os.path.exists(dir_path_content):
+        raise Exception
+    
+    listdir = os.listdir(dir_path_content)
+    files = [file for file in listdir if os.path.isfile(os.path.join(dir_path_content,file))]
+    dirs = [dir for dir in listdir if os.path.isdir(os.path.join(dir_path_content,dir))]
+    
+    for file in files:
+        dest = os.path.join(dest_dir_path,file).replace('md','html')
+        generate_page(os.path.join(dir_path_content,file),template_path,dest)
+    
+    for dir in dirs:
+        generate_pages_recursive(os.path.join(dir_path_content,dir),template_path,os.path.join(dest_dir_path,dir))
+    return
+
 def main():
     copy_from_to("static","public")
-    generate_page("content/index.md","template.html","public/index.html")
-    generate_page("content/blog/glorfindel/index.md","template.html","public/blog/glorfindel/index.html")
-    generate_page("content/blog/tom/index.md","template.html","public/blog/tom/index.html")
-    generate_page("content/blog/majesty/index.md","template.html","public/blog/majesty/index.html")
-    generate_page("content/contact/index.md","template.html","public/contact/index.html")
+    generate_pages_recursive("content","template.html","public")
 
 main()

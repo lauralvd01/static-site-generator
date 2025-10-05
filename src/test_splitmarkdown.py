@@ -1,6 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
+from parentnode import ParentNode
 
 import splitmarkdown as sp
 
@@ -261,27 +262,27 @@ the **same** even with inline stuff
         )
     
     def test_block_to_heading_type(self):
-        md = "# This is a heading"
+        md = "# This is a normal heading"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.HEADING)
         
-        md = "## This is a heading"
+        md = "## **This is a bold heading**"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.HEADING)
         
-        md = "### This is a heading"
+        md = "### _This is an italic heading_"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.HEADING)
         
-        md = "#### This is a heading"
+        md = "#### `This is a code heading`"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.HEADING)
         
-        md = "##### This is a heading"
+        md = "##### ![This is an image heading](url)"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.HEADING)
         
-        md = "###### This is a heading"
+        md = "###### [This is a link heading](url)"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.HEADING)
     
@@ -291,17 +292,17 @@ the **same** even with inline stuff
         self.assertEqual(block_type,sp.BlockType.CODE)
     
     def test_block_to_quote_type(self):
-        md = ">This is a quote block\n>that takes\n>two lines."
+        md = ">This is a **quote block\n>that takes\n>two** lines."
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.QUOTE)
     
     def test_block_to_unordered_list_type(self):
-        md = "- This is an unordered list\n- with an item\n- an another item"
+        md = "- This is an _unordered list\n- with an item_\n- an another item"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.UNORDERED_LIST)
     
     def test_block_to_ordered_list_type(self):
-        md = "1. This is an ordered list\n2. with an item\n3. an another item"
+        md = "1. This is `an ordered list\n2. with an item\n3. an` another item"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.ORDERED_LIST)
     
@@ -311,6 +312,14 @@ the **same** even with inline stuff
         self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
         
         md = " # This is not a heading"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "#"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "# "
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
         
@@ -354,6 +363,18 @@ the **same** even with inline stuff
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
         
+        md = "- "
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "- \n- This is not an unordered list\n- with an item\n- an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "- This is not an unordered list\n- \n- with an empty item\n- an other items"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
         md = "- This is not an unordered list\n with an item\n- an another item"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
@@ -370,6 +391,18 @@ the **same** even with inline stuff
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
         
+        md = "1. "
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "1. This is an ordered list\n2. with an item and then an empty one\n3. \n4. even with another item."
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "1. This is an ordered list\n2. with an item and then an empty one\n3. "
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
         md = "0. This is an ordered list\n1. with an item\n2. an another item"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
@@ -381,3 +414,82 @@ the **same** even with inline stuff
         md = "1. This is an ordered list\n2. with an item\n and something else"
         block_type = sp.block_to_block_type(md)
         self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+    
+    def test_markdown_headings_to_html_node(self):
+        md = """
+# Heading 1
+
+## _Heading 2_
+
+### [Heading 3](url)
+
+#### `Heading 4`
+
+##### ![Heading 5](url)
+
+###### **Heading 6**
+"""
+        node = sp.markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,'<div><h1>Heading 1</h1><h2><i>Heading 2</i></h2><h3><a href="url">Heading 3</a></h3><h4><code>Heading 4</code></h4><h5><img src="url" alt="Heading 5"></img></h5><h6><b>Heading 6</b></h6></div>')
+    
+    def test_markdown_codes_to_html_node(self):
+        md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+
+```
+This is another code
+on
+three lines
+```
+"""
+        node = sp.markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,"<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre><pre><code>This is another code\non\nthree lines\n</code></pre></div>")
+        
+    def test_markdown_quotes_to_html_node(self):
+        md = """
+>This is a **first** quote
+>_on
+>three_ lines.
+
+>
+>This is `another` quote.
+>
+
+>This quote presents
+>![an image](url) and
+>a [link](url)
+"""
+        node = sp.markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,'<div><blockquote>This is a <b>first</b> quote\n<i>on\nthree</i> lines.</blockquote><blockquote>\nThis is <code>another</code> quote.\n</blockquote><blockquote>This quote presents\n<img src="url" alt="an image"></img> and\na <a href="url">link</a></blockquote></div>')
+
+    def test_markdown_unordered_list_to_html_node(self):
+        md = """
+- This is a **first unordered** list
+- with
+- three _items_.
+
+
+- [last but not least](url3)
+"""
+        node = sp.markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,'<div><ul><li>This is a <b>first unordered</b> list</li><li>with</li><li>three <i>items</i>.</li></ul><ul><li><a href="url3">last but not least</a></li></ul></div>')
+    
+    def test_markdown_ordered_list_to_html_node(self):
+        md = """
+1. This is a **first ordered** list
+2. with
+3. three _items_.
+
+
+1. [last but not least](url3)
+"""
+        node = sp.markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,'<div><ol><li>This is a <b>first ordered</b> list</li><li>with</li><li>three <i>items</i>.</li></ol><ol><li><a href="url3">last but not least</a></li></ol></div>')

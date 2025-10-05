@@ -1,6 +1,7 @@
 import re
 
 from textnode import TextType, TextNode
+from parentnode import ParentNode
 
 ############################################ Split inline elements
 
@@ -133,37 +134,37 @@ Returns the correspondant BlockType.
 Assumes all leading and trailing whitespace were already stripped.
 """
 def block_to_block_type(text):
-    # Headings are a one-line block, start with 1-6 # characters, followed by a space and then the heading text.
-    pattern = r"^#{1,6} .*"
-    match = re.findall(pattern,text)
-    if len(match) == 1 and match[0] == text:
+    # Headings are a one-line block, start with 1-6 # characters, followed by a space and then the heading text (at least one character).
+    pattern = r"^#{1,6} .+"
+    matches = re.findall(pattern,text)
+    if len(matches) == 1 and matches[0] == text:
         return BlockType.HEADING
     
     # Code blocks can be a several-lines block, must start with 3 backticks and end with 3 backticks.
     pattern = r"^`{3}[\s\S]*`{3}$"
-    match = re.findall(pattern,text)
-    if len(match) == 1 and match[0] == text:
+    matches = re.findall(pattern,text)
+    if len(matches) == 1 and matches[0] == text:
         return BlockType.CODE
     
     # Every line in a quote block must start with a > character.
     pattern = r"^>(?:.*\n>)*.*"
-    match = re.findall(pattern,text)
-    if len(match) == 1 and match[0] == text:
+    matches = re.findall(pattern,text)
+    if len(matches) == 1 and matches[0] == text:
         return BlockType.QUOTE
     
-    # Every line in an unordered list block must start with a - character, followed by a space.
-    pattern = r"^- (?:.*\n- )*.*"
-    match = re.findall(pattern,text)
-    if len(match) == 1 and match[0] == text:
+    # Every line in an unordered list block must start with a - character, followed by a space, and have at least one character on each line.
+    pattern = r"^- (?:.+\n- )*.+"
+    matches = re.findall(pattern,text)
+    if len(matches) == 1 and matches[0] == text:
         return BlockType.UNORDERED_LIST
     
-    # Every line in an ordered list block must start with a number followed by a . character and a space. The number must start at 1 and increment by 1 for each line.
+    # Every line in an ordered list block must start with a number followed by a . character and a space, and have at least one character on each line. The number must start at 1 and increment by 1 for each line.
     # Check the format each-line-begins-with-a-digit-a-dot-and-a-space
-    pattern = r"^\d\. (?:.*\n\d\. )*.*"
-    match = re.findall(pattern,text)
-    if len(match) == 1 and match[0] == text:
+    pattern = r"^\d+\. (?:.+\n\d\. )*.+"
+    matches = re.findall(pattern,text)
+    if len(matches) == 1 and matches[0] == text:
         # Retrieve the digits list and check that its ordered and start at 1
-        pattern = r"^(\d)\. .*"
+        pattern = r"^(\d+)\. .+"
         matches = re.findall(pattern,text,re.MULTILINE)
         ordered_range = [f'{i+1}' for i in range(len(matches))]
         if ordered_range == matches :
@@ -171,3 +172,79 @@ def block_to_block_type(text):
     
     # Every other block are paragraph block
     return BlockType.PARAGRAPH
+
+"""
+Takes a string of inline text.
+Returns a list of HTMLNodes that represent the inline markdown.
+"""
+def text_to_children(text):
+    children = []
+    texnodes = text_to_textnodes(text)
+    for textnode in texnodes:
+        children.append(textnode.text_node_to_html_node())
+    return children
+
+"""
+Takes a markdown block and its block type.
+Returns the correspondant HTMLNode.
+"""
+def block_to_html_node(block_text,block_type):
+    if block_type == BlockType.HEADING:
+        pattern = r"^(\S+) "
+        matches = re.findall(pattern,block_text)
+        raw_text = block_text.split(matches[0] + ' ')[1]
+        children = text_to_children(raw_text)
+        return ParentNode(tag=f'h{len(matches[0])}',children=children)
+    
+    if block_type == BlockType.CODE:
+        pattern = r"^`{3}\n([\s\S]*)`{3}$"
+        matches = re.findall(pattern,block_text)
+        textnode = TextNode(text=matches[0],type=TextType.CODE)
+        children = [textnode.text_node_to_html_node()]
+        return ParentNode(tag='pre',children=children)
+    
+    if block_type == BlockType.QUOTE:
+        raw_text = block_text.replace('>','')
+        children = text_to_children(raw_text)
+        return ParentNode(tag='blockquote',children=children)
+    
+    if block_type == BlockType.UNORDERED_LIST:
+        items = block_text.split('- ')
+        children = []
+        for item in items:
+            if len(item) > 0:
+                raw_text = item.strip()
+                nested_children = text_to_children(raw_text)
+                children.append(ParentNode(tag='li',children=nested_children))
+        return ParentNode(tag='ul',children=children)
+    
+    if block_type == BlockType.ORDERED_LIST:
+        items = block_text.split('\n')
+        children = []
+        for item in items:
+            if len(item) > 0:
+                pattern = r"^\d+\. (.+)"
+                matches = re.findall(pattern,item)
+                raw_text = matches[0].strip()
+                nested_children = text_to_children(raw_text)
+                children.append(ParentNode(tag='li',children=nested_children))
+        return ParentNode(tag='ol',children=children)
+    return None
+
+
+"""
+Takes a raw Markdown string, representing a full document.
+Returns a single HTMLNode that contains all the child HTMLNodes
+representing the nested elements of the document.
+"""
+def markdown_to_html_node(markdown):
+    children = []
+    
+    markdown_blocks = markdown_to_blocks(markdown)
+    for md_block in markdown_blocks:
+        block_type = block_to_block_type(md_block)
+        block_htmlnode = block_to_html_node(md_block,block_type)
+        children.append(block_htmlnode)
+    
+    parent_htmlnode = ParentNode(tag="div",children=children)
+    return parent_htmlnode

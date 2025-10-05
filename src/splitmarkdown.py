@@ -229,7 +229,9 @@ def block_to_html_node(block_text,block_type):
                 nested_children = text_to_children(raw_text)
                 children.append(ParentNode(tag='li',children=nested_children))
         return ParentNode(tag='ol',children=children)
-    return None
+    
+    children = text_to_children(block_text.strip())
+    return ParentNode(tag='p',children=children)
 
 
 """
@@ -248,3 +250,15 @@ def markdown_to_html_node(markdown):
     
     parent_htmlnode = ParentNode(tag="div",children=children)
     return parent_htmlnode
+
+"""
+Takes a raw Markdown string, representing a full document.
+Returns the content of the h1 header of the file.
+Raise an exception if there is no h1 header.
+"""
+def extract_title(markdown):
+    pattern = r"# (.+)"
+    matches = re.findall(pattern,markdown)
+    if len(matches) == 0:
+        raise Exception
+    return matches[0].strip()

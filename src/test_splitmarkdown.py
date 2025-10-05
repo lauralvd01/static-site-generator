@@ -493,3 +493,44 @@ three lines
         node = sp.markdown_to_html_node(md)
         html = node.to_html()
         self.assertEqual(html,'<div><ol><li>This is a <b>first ordered</b> list</li><li>with</li><li>three <i>items</i>.</li></ol><ol><li><a href="url3">last but not least</a></li></ol></div>')
+    
+    def test_markdown_paragraph_to_html_node(self):
+        md = """
+![An image](url) to begin 
+a paragraph
+
+This is a **second** _paragraph_.
+
+And then a [link](url2)
+"""
+        node = sp.markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,'<div><p><img src="url" alt="An image"></img> to begin \na paragraph</p><p>This is a <b>second</b> <i>paragraph</i>.</p><p>And then a <a href="url2">link</a></p></div>')
+    
+    def test_extract_title(self):
+        md = """
+Raw text
+blabla
+
+![image](url)
+
+# Heading 1
+
+## Heading 2
+
+blabla
+"""
+        title = sp.extract_title(md)
+        self.assertEqual(title,"Heading 1")
+        
+        md = """
+Raw text
+blabla
+
+![image](url)
+
+## Heading 2
+
+blabla
+"""
+        self.assertRaises(Exception,sp.extract_title(md))

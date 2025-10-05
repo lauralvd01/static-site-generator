@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from textnode import TextNode, TextType
+import splitmarkdown as sp
 
 """
 Takes a source directory and a destination directory.
@@ -46,8 +46,38 @@ def copy_from_to(source : str, destination : str, start : bool = True):
     print(source+" fully copied to "+destination+".")
     return
 
+"""
+Takes the path of the markdown file to read, of the template html to use and of the html destination file.
+Reads the markdown and the template files,
+converts the markdown to html and create the
+destination file with the template filled with
+the markdown title and its translated content.
+"""
+def generate_page(from_path, template_path, dest_path):
+    print(f'Generating page from {from_path} to {dest_path} using {template_path}')
+    
+    markdown = ""
+    with open(from_path,"r") as markdown_file:
+        markdown = markdown_file.read()
+    
+    template_html = ""
+    with open(template_path,"r") as html_file:
+        template_html = html_file.read()
+    
+    markdown_to_node = sp.markdown_to_html_node(markdown)
+    markdown_to_html = markdown_to_node.to_html()
+    
+    title = sp.extract_title(markdown)
+    
+    template_html = template_html.replace("{{ Title }}",title)
+    template_html = template_html.replace("{{ Content }}",markdown_to_html)
+    
+    os.makedirs(os.path.dirname(dest_path),exist_ok=True)
+    with open(dest_path,"w") as final_html_file:
+        final_html_file.write(template_html)
+
 def main():
     copy_from_to("static","public")
-    
+    generate_page("content/index.md","template.html","public/index.html")
 
 main()

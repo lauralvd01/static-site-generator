@@ -452,21 +452,21 @@ three lines
         
     def test_markdown_quotes_to_html_node(self):
         md = """
->This is a **first** quote
->_on
->three_ lines.
+> This is a **first** quote
+> _on
+> three_ lines.
 
 >
 >This is `another` quote.
 >
 
->This quote presents
->![an image](url) and
->a [link](url)
+> This quote presents
+> ![an image](url) and
+> a [link](url)
 """
         node = sp.markdown_to_html_node(md)
         html = node.to_html()
-        self.assertEqual(html,'<div><blockquote>This is a <b>first</b> quote\n<i>on\nthree</i> lines.</blockquote><blockquote>\nThis is <code>another</code> quote.\n</blockquote><blockquote>This quote presents\n<img src="url" alt="an image"></img> and\na <a href="url">link</a></blockquote></div>')
+        self.assertEqual(html,'<div><blockquote>This is a <b>first</b> quote <i>on three</i> lines.</blockquote><blockquote>This is <code>another</code> quote.</blockquote><blockquote>This quote presents <img src="url" alt="an image"></img> and a <a href="url">link</a></blockquote></div>')
 
     def test_markdown_unordered_list_to_html_node(self):
         md = """

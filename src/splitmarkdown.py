@@ -204,7 +204,8 @@ def block_to_html_node(block_text,block_type):
         return ParentNode(tag='pre',children=children)
     
     if block_type == BlockType.QUOTE:
-        raw_text = block_text.replace('>','')
+        raw_text = block_text.replace('>','').strip()
+        raw_text = raw_text.replace('\n','')
         children = text_to_children(raw_text)
         return ParentNode(tag='blockquote',children=children)
     

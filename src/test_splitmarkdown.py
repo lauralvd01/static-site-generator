@@ -245,3 +245,139 @@ This is a wrong block
                 "- This is a list\n- with items\nThis is a wrong block",
             ],
         )
+    
+        md = """
+```
+This is a code block that _should_ remain
+the **same** even with inline stuff
+```
+"""
+        blocks = sp.markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "```\nThis is a code block that _should_ remain\nthe **same** even with inline stuff\n```",
+            ],
+        )
+    
+    def test_block_to_heading_type(self):
+        md = "# This is a heading"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.HEADING)
+        
+        md = "## This is a heading"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.HEADING)
+        
+        md = "### This is a heading"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.HEADING)
+        
+        md = "#### This is a heading"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.HEADING)
+        
+        md = "##### This is a heading"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.HEADING)
+        
+        md = "###### This is a heading"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.HEADING)
+    
+    def test_block_to_code_type(self):
+        md = "```\nThis is a code block that _should_ remain\nthe **same** even with inline stuff\n```"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.CODE)
+    
+    def test_block_to_quote_type(self):
+        md = ">This is a quote block\n>that takes\n>two lines."
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.QUOTE)
+    
+    def test_block_to_unordered_list_type(self):
+        md = "- This is an unordered list\n- with an item\n- an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.UNORDERED_LIST)
+    
+    def test_block_to_ordered_list_type(self):
+        md = "1. This is an ordered list\n2. with an item\n3. an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.ORDERED_LIST)
+    
+    def test_block_to_paragraph_type(self):
+        md = "####### This is not a heading as is has more than six #"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = " # This is not a heading"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "#This is not a heading"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "# This is not a heading\nAs is has more than one line"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "Other beginning ```\nThis is a code block that _should_ remain\nthe **same** even with inline stuff\n``` and then other stuff."
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "```\nThis is a code block that _should_ remain\nthe **same** even with inline stuff\n``` and then other stuff."
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "``\nThis is a code block that _should_ remain\nthe **same** even with inline stuff\n```"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "```\nThis is a code block that _should_ remain\nthe **same** even with inline stuff\n``"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = ">This is a quote block\nthat takes\n>two lines."
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "This is a quote block\n>that takes\n>two lines."
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = ">This is a quote block\n>that takes\ntwo lines."
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "This is not an unordered list\n- with an item\n- an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "- This is not an unordered list\n with an item\n- an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "- This is not an unordered list\n-with an item\n- an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "-. This is not an unordered list\n-. with an item\n-. an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "1. This is an ordered list\n4. with an item\n3. an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "0. This is an ordered list\n1. with an item\n2. an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "1.This is an ordered list\n2. with an item\n3. an another item"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)
+        
+        md = "1. This is an ordered list\n2. with an item\n and something else"
+        block_type = sp.block_to_block_type(md)
+        self.assertEqual(block_type,sp.BlockType.PARAGRAPH)

@@ -53,7 +53,7 @@ converts the markdown to html and create the
 destination file with the template filled with
 the markdown title and its translated content.
 """
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f'Generating page from {from_path} to {dest_path} using {template_path}')
     
     markdown = ""
@@ -71,6 +71,7 @@ def generate_page(from_path, template_path, dest_path):
     
     template_html = template_html.replace("{{ Title }}",title)
     template_html = template_html.replace("{{ Content }}",markdown_to_html)
+    template_html = template_html.replace('href="/',f'href="{basepath}')
     
     os.makedirs(os.path.dirname(dest_path),exist_ok=True)
     with open(dest_path,"w") as final_html_file:
@@ -82,7 +83,7 @@ For each markdown file of the source directory, generate the correspondant
 html based on the template and save it in the destination directory.
 Repeats recursively with each subdirectory.
 """
-def generate_pages_recursive(dir_path_content,template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content,template_path, dest_dir_path, basepath):
     if not os.path.exists(dir_path_content):
         raise Exception
     
@@ -92,14 +93,20 @@ def generate_pages_recursive(dir_path_content,template_path, dest_dir_path):
     
     for file in files:
         dest = os.path.join(dest_dir_path,file).replace('md','html')
-        generate_page(os.path.join(dir_path_content,file),template_path,dest)
+        generate_page(os.path.join(dir_path_content,file),template_path,dest,basepath)
     
     for dir in dirs:
-        generate_pages_recursive(os.path.join(dir_path_content,dir),template_path,os.path.join(dest_dir_path,dir))
+        generate_pages_recursive(os.path.join(dir_path_content,dir),template_path,os.path.join(dest_dir_path,dir),basepath)
     return
 
-def main():
-    copy_from_to("static","public")
-    generate_pages_recursive("content","template.html","public")
+def main(*args):
+    basepath = '/'
+    dest_directory = 'public'
+    if len(args[0]) > 1:
+        basepath = args[0][1]
+        dest_directory = 'docs'
+    copy_from_to("static",dest_directory)
+    generate_pages_recursive("content","template.html",dest_directory,basepath)
 
-main()
+import sys
+main(sys.argv)
